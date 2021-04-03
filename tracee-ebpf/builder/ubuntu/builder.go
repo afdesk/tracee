@@ -2,8 +2,10 @@ package ubuntu
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -12,6 +14,10 @@ import (
 
 const (
 	mainlineUrl = "http://kernel.ubuntu.com/~kernel-ppa/mainline/v"
+)
+
+var (
+	errFailedDownloadLink = errors.New("failed download link")
 )
 
 type ubuntuBuilder struct {
@@ -31,6 +37,26 @@ func BuildShellScript(kernelRelease string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// check of links
+	resp, err := http.Head(all)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("failed common link %q. Response: %q", all, resp.Status)
+		return nil, errFailedDownloadLink
+	}
+
+	resp, err = http.Head(current)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("failed specific link %q. Response: %q", all, resp.Status)
+		return nil, errFailedDownloadLink
+	}
+
 
 	var buff bytes.Buffer
 	t, err := template.New("linux-kernel-builder").Parse(ubuntuAction)
