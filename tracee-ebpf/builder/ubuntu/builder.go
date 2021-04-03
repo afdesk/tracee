@@ -38,7 +38,6 @@ func BuildShellScript(kernelRelease string) ([]byte, error) {
 		return nil, err
 	}
 
-	// check of links
 	resp, err := http.Head(all)
 	if err != nil {
 		return nil, err
@@ -47,16 +46,14 @@ func BuildShellScript(kernelRelease string) ([]byte, error) {
 		log.Printf("failed common link %q. Response: %q", all, resp.Status)
 		return nil, errFailedDownloadLink
 	}
-
 	resp, err = http.Head(current)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("failed specific link %q. Response: %q", all, resp.Status)
+		log.Printf("failed specific link %q. Response: %q", current, resp.Status)
 		return nil, errFailedDownloadLink
 	}
-
 
 	var buff bytes.Buffer
 	t, err := template.New("linux-kernel-builder").Parse(ubuntuAction)
