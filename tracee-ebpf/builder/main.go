@@ -42,6 +42,16 @@ func initUbuntuList() {
 }
 
 func main() {
+	logFile := os.Getenv("TRACEE_BUILDER_LOGFILE")
+	if logFile != "" {
+		f, err := os.OpenFile(logFile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0444)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		log.SetOutput(f)
+	}
+
 	var buff bytes.Buffer
 	buff.WriteString(header)
 
